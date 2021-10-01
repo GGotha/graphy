@@ -10,12 +10,16 @@ import AddNewCoinCard from "components/AddNewCoinCard";
 import CoinCard from "components/CoinCard";
 import api from "services/api.coingecko";
 
+const AUTO_UPDATE_TIMER_MILISECONDS = 26000;
+
 function HomeComponent() {
   const [active, setActive] = useState(false);
   const [cards, setCards] = useState([]);
   const [searchInput, setSearchInput] = useState("");
   const [isAutoUpdateActive, setIsAutoUpdateActive] = useState(false);
   const [isIntervalActive, setIsIntervalActive] = useState(false);
+  const [clock, setClock] = useState(0);
+  const [isTimerActive, setIsTimerActive] = useState(false);
 
   const getCoinOnAPI = useCallback(async () => {
     try {
@@ -39,7 +43,7 @@ function HomeComponent() {
   }, [searchInput, cards]);
 
   const setSearchInputValue = useCallback((e) => {
-    setSearchInput(e.target.value);
+    setSearchInput(e.target.value.toLowerCase());
   }, []);
 
   const updateActive = useCallback(() => {
@@ -68,16 +72,47 @@ function HomeComponent() {
     loadStorageData();
   }, []);
 
+  const startTimer = useCallback(
+    (duration, action) => {
+      var timer = duration;
+      var minutes;
+      var seconds;
+
+      if (action === "start") {
+        var intervalTimer = setInterval(function () {
+          minutes = parseInt(timer / 60, 10);
+          seconds = parseInt(timer % 60, 10);
+
+          minutes = minutes < 10 ? "0" + minutes : minutes;
+          seconds = seconds < 10 ? "0" + seconds : seconds;
+
+          setClock(minutes + ":" + seconds);
+          setIsTimerActive(intervalTimer);
+
+          if (--timer < 0) {
+            timer = duration;
+          }
+        }, 1000);
+      } else {
+        clearInterval(isTimerActive);
+      }
+    },
+    [isTimerActive]
+  );
+
   useEffect(() => {
     if (isAutoUpdateActive) {
       var refresh = setInterval(() => {
         loadStorageData();
-      }, 5000);
+      }, AUTO_UPDATE_TIMER_MILISECONDS);
+
+      startTimer((AUTO_UPDATE_TIMER_MILISECONDS - 1000) / 1000, "start");
 
       setIsIntervalActive(refresh);
 
       return;
     } else {
+      startTimer(0, "end");
       clearInterval(isIntervalActive);
     }
   }, [isAutoUpdateActive]);
@@ -147,6 +182,9 @@ function HomeComponent() {
                 alignItems: "center",
               }}
             >
+              <Button variant="outlined" style={{ marginRight: "20px" }}>
+                Next Update {clock}
+              </Button>
               <Button onClick={autoUpdateActive} variant="contained">
                 Auto Update {isAutoUpdateActive ? <CheckIcon /> : <CloseIcon />}
               </Button>
