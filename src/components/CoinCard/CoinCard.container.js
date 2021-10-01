@@ -3,7 +3,7 @@ import React from "react";
 import CoinCardComponent from "./CoinCard.component";
 
 function CoinCardContainer(props) {
-  const { name, image, price, percentage24h } = props;
+  const { name, image, price, percentage24h, symbol } = props;
 
   return (
     <CoinCardComponent
@@ -11,6 +11,7 @@ function CoinCardContainer(props) {
       image={image}
       price={price}
       percentage24h={percentage24h}
+      symbol={symbol}
     />
   );
 }

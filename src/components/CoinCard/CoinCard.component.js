@@ -1,13 +1,13 @@
 import React, { Fragment, useState, useCallback } from "react";
 
-import { Card } from "@material-ui/core";
+import { Card, Tooltip } from "@material-ui/core";
 
 import FavoriteBorder from "@material-ui/icons/FavoriteBorder";
 import Favorite from "@material-ui/icons/Favorite";
 import IconButton from "@material-ui/core/IconButton";
 
 function CoinCardComponent(props) {
-  const { name, image, price, percentage24h } = props;
+  const { name, image, price, percentage24h, symbol } = props;
 
   const [isFavorite, setIsFavorite] = useState(false);
 
@@ -61,8 +61,11 @@ function CoinCardComponent(props) {
             height: "100%",
           }}
         >
-          <img src={image} width={60} />
+          <Tooltip title={symbol}>
+            <img src={image} alt={name} width={60} />
+          </Tooltip>
         </div>
+
         <div
           style={{
             position: "absolute",

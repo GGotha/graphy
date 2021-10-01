@@ -1,9 +1,11 @@
 import React, { Fragment, useCallback, useEffect, useState } from "react";
 
-import { Grid, TextField } from "@material-ui/core";
+import { Grid, TextField, Button } from "@material-ui/core";
 import IconButton from "@material-ui/core/IconButton";
 import InputAdornment from "@material-ui/core/InputAdornment";
 import SearchIcon from "@material-ui/icons/Search";
+import CheckIcon from "@material-ui/icons/Check";
+import CloseIcon from "@material-ui/icons/Close";
 import AddNewCoinCard from "components/AddNewCoinCard";
 import CoinCard from "components/CoinCard";
 import api from "services/api.coingecko";
@@ -12,6 +14,8 @@ function HomeComponent() {
   const [active, setActive] = useState(false);
   const [cards, setCards] = useState([]);
   const [searchInput, setSearchInput] = useState("");
+  const [isAutoUpdateActive, setIsAutoUpdateActive] = useState(false);
+  const [isIntervalActive, setIsIntervalActive] = useState(false);
 
   const getCoinOnAPI = useCallback(async () => {
     try {
@@ -23,6 +27,7 @@ function HomeComponent() {
         price: response.data.market_data.current_price.brl,
         percentage24h:
           response.data.market_data.price_change_percentage_24h_in_currency.brl,
+        symbol: response.data.symbol,
       };
 
       setCards([coin, ...cards]);
@@ -51,8 +56,31 @@ function HomeComponent() {
   );
 
   useEffect(() => {
+    const autoUpdateLocalStorageString = localStorage.getItem("autoUpdate");
+
+    if (autoUpdateLocalStorageString) {
+      var autoUpdateLocalStorageBoolean =
+        autoUpdateLocalStorageString === "true";
+
+      setIsAutoUpdateActive(autoUpdateLocalStorageBoolean);
+    }
+
     loadStorageData();
   }, []);
+
+  useEffect(() => {
+    if (isAutoUpdateActive) {
+      var refresh = setInterval(() => {
+        loadStorageData();
+      }, 5000);
+
+      setIsIntervalActive(refresh);
+
+      return;
+    } else {
+      clearInterval(isIntervalActive);
+    }
+  }, [isAutoUpdateActive]);
 
   const loadStorageData = useCallback(async () => {
     let storagedFavorites = [];
@@ -73,6 +101,7 @@ function HomeComponent() {
           percentage24h:
             response.data.market_data.price_change_percentage_24h_in_currency
               .brl,
+          symbol: response.data.symbol,
         };
 
         storagedFavorites.push(coin);
@@ -81,8 +110,24 @@ function HomeComponent() {
       })
     );
 
+    coins[0].sort((a, b) => {
+      if (a.name < b.name) {
+        return -1;
+      }
+      if (a.name > b.name) {
+        return 1;
+      }
+      return 0;
+    });
+
     setCards(coins[0]);
   }, [cards, setCards]);
+
+  const autoUpdateActive = useCallback(() => {
+    setIsAutoUpdateActive((isAutoUpdateActive) => !isAutoUpdateActive);
+
+    localStorage.setItem("autoUpdate", !isAutoUpdateActive);
+  }, [isAutoUpdateActive]);
 
   return (
     <Fragment>
@@ -94,6 +139,19 @@ function HomeComponent() {
         }}
       >
         <Grid container style={{ padding: "30px" }}>
+          <Grid lg={11.58} md={6} sm={6} xs={12}>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "flex-end",
+                alignItems: "center",
+              }}
+            >
+              <Button onClick={autoUpdateActive} variant="contained">
+                Auto Update {isAutoUpdateActive ? <CheckIcon /> : <CloseIcon />}
+              </Button>
+            </div>
+          </Grid>
           {cards.map((card) => (
             <Grid key={card.image} lg={2.8} md={6} sm={6} xs={12} mx={1} mt={2}>
               <CoinCard
@@ -101,10 +159,11 @@ function HomeComponent() {
                 image={card.image}
                 price={card.price}
                 percentage24h={card.percentage24h}
+                symbol={card.symbol}
               />
             </Grid>
           ))}
-          <Grid lg={2.8} md={6} sm={6} xs={12} mx={0} mt={2}>
+          <Grid lg={2.8} md={6} sm={6} xs={12} mx={1} mt={2}>
             <AddNewCoinCard updateActive={updateActive} />
           </Grid>
         </Grid>

@@ -18,7 +18,8 @@ yarn start
 yarn run electron
 ```
 
-## Next Features
+## Next Updates
 
-- Update Currency Price every 5 seconds
+- Update Currency Price every 5 seconds ✔️
 - Fix Favorite Button
+- Apply Clean Code
