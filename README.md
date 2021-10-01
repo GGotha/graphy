@@ -1,17 +1,17 @@
-# Chapter 10: Building a Digital Wallet for Desktops
+# Graphy
 
 ## Installing
 
 ```sh
-npm install
+yarn install
 ```
 
 ## Running
 
 ```sh
 # terminal 1: run local web server
-npm start
+yarn start
 
 # terminal 2: run electron app
-npm run electron
+yarn run electron
 ```
